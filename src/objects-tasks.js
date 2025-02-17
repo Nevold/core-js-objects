@@ -120,8 +120,8 @@ function isEmptyObject(obj) {
  *    immutableObj.newProp = 'new';
  *    console.log(immutableObj) => {a: 1, b: 2}
  */
-function makeImmutable(/* obj */) {
-  throw new Error('Not implemented');
+function makeImmutable(obj) {
+  return Object.freeze(obj);
 }
 
 /**
@@ -169,8 +169,15 @@ function sellTickets(/* queue */) {
  *    console.log(r.height);      // => 20
  *    console.log(r.getArea());   // => 200
  */
-function Rectangle(/* width, height */) {
-  throw new Error('Not implemented');
+function Rectangle(width, height) {
+  const r = {
+    width,
+    height,
+    getArea() {
+      return this.width * this.height;
+    },
+  };
+  return r;
 }
 
 /**
@@ -228,8 +235,30 @@ function fromJSON(proto, json) {
  *      { country: 'Russia',  city: 'Saint Petersburg' }
  *    ]
  */
-function sortCitiesArray(/* arr */) {
-  throw new Error('Not implemented');
+function sortCitiesArray(arr) {
+  function compareCountry(a, b) {
+    if (a.country < b.country) {
+      return -1;
+    }
+    if (a.country > b.country) {
+      return 1;
+    }
+    return 0;
+  }
+
+  function compareCity(a, b) {
+    if (a.country === b.country) {
+      if (a.city < b.city) {
+        return -1;
+      }
+      if (a.city > b.city) {
+        return 1;
+      }
+    }
+    return 0;
+  }
+
+  return arr.sort(compareCountry).sort(compareCity);
 }
 
 /**
@@ -320,33 +349,87 @@ function group(/* array, keySelector, valueSelector */) {
  *  For more examples see unit tests.
  */
 
+class CssBuilder {
+  constructor() {
+    this.value = '';
+    this.status = '';
+  }
+
+  element(value) {
+    this.error(1);
+    this.status = 1;
+    this.value = `${value}`;
+    return this;
+  }
+
+  id(value) {
+    this.error(2);
+    this.status = 2;
+    this.value = `${this.value}#${value}`;
+    return this;
+  }
+
+  class(value) {
+    this.error(3);
+    this.status = 3;
+    this.value = `${this.value}.${value}`;
+    return this;
+  }
+
+  attr(value) {
+    this.error(4);
+    this.status = 4;
+    this.value = `${this.value}[${value}]`;
+    return this;
+  }
+
+  pseudoClass(value) {
+    this.error(5);
+    this.status = 5;
+    this.value = `${this.value}:${value}`;
+    return this;
+  }
+
+  pseudoElement(value) {
+    this.error(6);
+    this.status = 6;
+    this.value = `${this.value}::${value}`;
+    return this;
+  }
+
+  error(currentStatus) {
+    if (this.status > currentStatus)
+      throw new Error(
+        'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element'
+      );
+    if (
+      this.status === currentStatus &&
+      (currentStatus === 1 || currentStatus === 2 || currentStatus === 6)
+    )
+      throw new Error(
+        'Element, id and pseudo-element should not occur more then one time inside the selector'
+      );
+  }
+
+  stringify() {
+    return this.value;
+  }
+}
+
 const cssSelectorBuilder = {
-  element(/* value */) {
-    throw new Error('Not implemented');
+  value: '',
+  element: (value) => new CssBuilder().element(value),
+  id: (value) => new CssBuilder().id(value),
+  class: (value) => new CssBuilder().class(value),
+  attr: (value) => new CssBuilder().attr(value),
+  pseudoClass: (value) => new CssBuilder().pseudoClass(value),
+  pseudoElement: (value) => new CssBuilder().pseudoElement(value),
+  combine(selector1, combinator, selector2) {
+    this.value = `${selector1.value} ${combinator} ${selector2.value}`;
+    return this;
   },
-
-  id(/* value */) {
-    throw new Error('Not implemented');
-  },
-
-  class(/* value */) {
-    throw new Error('Not implemented');
-  },
-
-  attr(/* value */) {
-    throw new Error('Not implemented');
-  },
-
-  pseudoClass(/* value */) {
-    throw new Error('Not implemented');
-  },
-
-  pseudoElement(/* value */) {
-    throw new Error('Not implemented');
-  },
-
-  combine(/* selector1, combinator, selector2 */) {
-    throw new Error('Not implemented');
+  stringify() {
+    return this.value;
   },
 };
 
