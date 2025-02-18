@@ -134,8 +134,15 @@ function makeImmutable(obj) {
  *    makeWord({ a: [0, 1], b: [2, 3], c: [4, 5] }) => 'aabbcc'
  *    makeWord({ H:[0], e: [1], l: [2, 3, 8], o: [4, 6], W:[5], r:[7], d:[9]}) => 'HelloWorld'
  */
-function makeWord(/* lettersObject */) {
-  throw new Error('Not implemented');
+function makeWord(lettersObject) {
+  const arrKeys = Object.keys(lettersObject);
+  const resArr = Array(Object.values(lettersObject).flat().length);
+  arrKeys.forEach((el) => {
+    lettersObject[el].forEach((elem) => {
+      resArr[elem] = el;
+    });
+  });
+  return resArr.join('');
 }
 
 /**
@@ -170,14 +177,13 @@ function sellTickets(/* queue */) {
  *    console.log(r.getArea());   // => 200
  */
 function Rectangle(width, height) {
-  const r = {
+  return {
     width,
     height,
     getArea() {
       return this.width * this.height;
     },
   };
-  return r;
 }
 
 /**
@@ -291,8 +297,18 @@ function sortCitiesArray(arr) {
  *    "Poland" => ["Lodz"]
  *   }
  */
-function group(/* array, keySelector, valueSelector */) {
-  throw new Error('Not implemented');
+function group(array, keySelector, valueSelector) {
+  const result = new Map();
+  array.forEach((item) => {
+    let valueArr = [];
+    if (result.has(keySelector(item))) {
+      valueArr = [...result.get(keySelector(item)), valueSelector(item)];
+    } else {
+      valueArr = [valueSelector(item)];
+    }
+    result.set(keySelector(item), valueArr);
+  });
+  return result;
 }
 
 /**
